@@ -29,9 +29,9 @@ def notify_system_proxy_changed():
         print(f"Error notifying WinINet: {e}")
 
 def get_default_gateway():
-    """Attempts to discover phone's hotspot IP from the default route."""
+    """Attempts to discover phone's hotspot or USB tethering IP from the default route, ignoring virtual/VPN adapters."""
     try:
-        cmd = "powershell -Command \"(Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Sort-Object RouteMetric | Select-Object -First 1).NextHop\""
+        cmd = "powershell -Command \"Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Where-Object { `$_.InterfaceAlias -notmatch 'PdaNet|TAP|Shield|BetterNet|Virtual|VPN' -and `$_.NextHop -ne '0.0.0.0' } | Select-Object -First 1 -ExpandProperty NextHop\""
         out = subprocess.check_output(cmd, shell=True, text=True, stderr=subprocess.DEVNULL).strip()
         if out and out != "0.0.0.0" and len(out.split(".")) == 4:
             return out
@@ -257,17 +257,22 @@ class VpnBridgeApp(tk.Tk):
         def worker():
             try:
                 start = time.time()
-                # Test connection via proxy (or system default)
-                opener = urllib.request.build_opener()
-                req = urllib.request.Request("https://www.google.com/generate_204", headers={"User-Agent": "Mozilla/5.0"})
-                with opener.open(req, timeout=5) as resp:
-                    if resp.status == 204 or resp.status == 200:
+                ip = self.current_ip.get().strip()
+                port = self.current_http_port.get().strip()
+                proxy_handler = urllib.request.ProxyHandler({
+                    'http': f'http://{ip}:{port}',
+                    'https': f'http://{ip}:{port}'
+                })
+                opener = urllib.request.build_opener(proxy_handler)
+                req = urllib.request.Request("https://www.google.com/generate_204", headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+                with opener.open(req, timeout=7) as resp:
+                    if resp.status in (200, 204):
                         elapsed = int((time.time() - start) * 1000)
                         self.ping_var.set(f"اینترنت آزاد وصل است: {elapsed} ms")
                         return
-                self.ping_var.set("عدم دریافت پاسخ مناسب")
+                self.ping_var.set("پاسخ نامناسب از سرور")
             except Exception as e:
-                self.ping_var.set("خطای اتصال به اینترنت")
+                self.ping_var.set("خطای اتصال به پروکسی گوشی")
 
         threading.Thread(target=worker, daemon=True).start()
 

@@ -57,8 +57,10 @@ class MainActivity : AppCompatActivity() {
         btnToggle.setOnClickListener {
             if (ProxyService.isServiceRunning) {
                 ProxyService.stopService(this)
+                Toast.makeText(this, "سرویس متوقف شد", Toast.LENGTH_SHORT).show()
             } else {
                 ProxyService.startService(this)
+                Toast.makeText(this, "سرویس فعال شد (پورت 8080 و 1080)", Toast.LENGTH_SHORT).show()
             }
         }
 

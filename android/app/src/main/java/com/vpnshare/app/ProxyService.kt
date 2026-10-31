@@ -86,7 +86,11 @@ class ProxyService : Service() {
         if (isServiceRunning) return
 
         acquireLocks()
-        startForeground(NOTIFICATION_ID, buildNotification("VPN Sharing is Active", "Listening on port 8080 & 1080"))
+        try {
+            startForeground(NOTIFICATION_ID, buildNotification("VPN Sharing is Active", "Listening on port 8080 & 1080"))
+        } catch (e: Exception) {
+            android.util.Log.e("ProxyService", "startForeground error: ${e.message}")
+        }
 
         val statsCallback: (Int, Long, Long) -> Unit = { _: Int, _: Long, _: Long ->
             val totalConns = (httpProxyServer?.activeConnections?.get() ?: 0) + (socks5ProxyServer?.activeConnections?.get() ?: 0)
