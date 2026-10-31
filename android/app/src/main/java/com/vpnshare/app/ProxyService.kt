@@ -88,7 +88,7 @@ class ProxyService : Service() {
         acquireLocks()
         startForeground(NOTIFICATION_ID, buildNotification("VPN Sharing is Active", "Listening on port 8080 & 1080"))
 
-        val statsCallback = { _: Int, _: Long, _: Long ->
+        val statsCallback: (Int, Long, Long) -> Unit = { _: Int, _: Long, _: Long ->
             val totalConns = (httpProxyServer?.activeConnections?.get() ?: 0) + (socks5ProxyServer?.activeConnections?.get() ?: 0)
             val totalTx = (httpProxyServer?.totalBytesSent?.get() ?: 0) + (socks5ProxyServer?.totalBytesSent?.get() ?: 0)
             val totalRx = (httpProxyServer?.totalBytesReceived?.get() ?: 0) + (socks5ProxyServer?.totalBytesReceived?.get() ?: 0)
@@ -98,6 +98,7 @@ class ProxyService : Service() {
             bytesDownloaded = totalRx
 
             onStatsUpdateListener?.invoke(activeConnections, bytesUploaded, bytesDownloaded)
+            Unit
         }
 
         httpProxyServer = HttpProxyServer(port = 8080, onStatsUpdated = statsCallback)
