@@ -115,12 +115,23 @@ class VpnBridgeApp(tk.Tk):
         ip_entry = tk.Entry(ip_row, textvariable=self.current_ip, font=("Consolas", 11), width=16, bg="#0F172A", fg="#34D399", insertbackground="white", relief="flat")
         ip_entry.pack(side="right")
 
-        auto_ip_btn = tk.Button(
-            ip_row, text="شناسایی خودکار IP", font=("Segoe UI", 8),
-            fg="#94A3B8", bg="#334155", relief="flat", cursor="hand2",
+        # Presets Buttons Row
+        preset_row = tk.Frame(settings_card, bg="#1E293B")
+        preset_row.pack(fill="x", pady=(10, 4))
+
+        p2p_btn = tk.Button(
+            preset_row, text="انتخاب IP وای‌فای دایرکت (192.168.49.1)",
+            font=("Segoe UI", 8, "bold"), fg="#34D399", bg="#065F46", relief="flat", cursor="hand2",
+            command=lambda: self.set_ip_preset("192.168.49.1")
+        )
+        p2p_btn.pack(side="left", expand=True, fill="x", padx=2)
+
+        gw_btn = tk.Button(
+            preset_row, text="شناسایی هات‌اسپات / کابل",
+            font=("Segoe UI", 8), fg="#FFFFFF", bg="#334155", relief="flat", cursor="hand2",
             command=self.auto_detect_ip
         )
-        auto_ip_btn.pack(side="right", padx=(0, 8))
+        gw_btn.pack(side="right", expand=True, fill="x", padx=2)
 
         # HTTP Port Row
         port_row = tk.Frame(settings_card, bg="#1E293B")
@@ -168,6 +179,10 @@ class VpnBridgeApp(tk.Tk):
             font=("Segoe UI", 9), fg="#64748B", bg="#0F172A", justify="center"
         )
         info_lbl.pack(side="bottom")
+
+    def set_ip_preset(self, ip_str):
+        self.current_ip.set(ip_str)
+        messagebox.showinfo("تنظیم IP", f"آدرس IP روی {ip_str} تنظیم شد.\nاکنون می‌توانید دکمه اتصال را بزنید.")
 
     def auto_detect_ip(self):
         gw = get_default_gateway()
